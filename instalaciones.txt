@@ -1,0 +1,67 @@
+npm i express express-handlebars express-session mysql express-mysql-session morgan bcryptjs passport passport-local timeago.js connect-flash
+
+______________________________________
+
+//initializations
+const app = express(); //devuelve un objeto
+
+app.set("port", process.env.PORT || 4000);
+//Le indicamos donde se encuentra la carpeta views - path.join() une directorios
+app.set("views", path.join(__dirname, "views"));
+app.engine(
+  ".hbs",
+  exphbs({
+    defaultLayout: "main",
+    layoutsDir: path.join(app.get("views"), "layouts"), //le indicamos que layouts esta dentro de la carpeta views
+    partialsDir: path.join(app.get("views"), "partials"),
+    extname: ".hbs",
+    helpers: require("./lib/handlebars"),
+  }) //configuracion del motor de plantilla. Los helpers son necesarios para poder ejecutar hbs
+);
+app.set("view engine", ".hbs");
+//Middlewares: son funciones que se ejecutan cada vez que un usuario envia una peticion
+app.use(morgan("dev")); //esto nos permite ver un mensaje por consola para saber que esta llegando a nuestro servidor
+app.use(express.urlencoded({ extended: false }));
+
+//Global Variables : tendra que ver con la validacion del usuario
+
+//Routes: definiremos las url de nuestro servidor. Que es lo que vamos a hacer cuando un usuario visite nuestro servidor
+app.use(require("./routes/"));
+//Public: todo el codigo que el navegador puede acceder
+
+//Starting the server
+app.listen(app.get("port"), () => {
+  console.log("Server on port", app.get("port"));
+});
+
+//partials: la usaremos para pegar pedazos de codigo que podamos reutilizar en nuestra aplicacion
+
+
+>>>app.use(express.urlencoded({ extended: false })); 
+//urlencoded: sirve para poder aceptar desde el formulario los datos que nos envien los usuarios. extended: false --> indica que solo se aceptaran datos de tipo string, simples
+
+>>>app.use((req, res, next) => {
+  next();
+});
+req : toma info del usuario
+res: toma lo que el servidor quiere responder
+next: toma una funcion para continuar
+
+>>>CREATE TABLE links(
+    id INT(11) NOT NULL,
+    title VARCAR(150) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    description TEXT,
+    user_id INT(11),
+    created_at timestamp NOT NULL DEFAULT current_timestamp,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-->Con user_id vamos a lograr que cada link corresponidente a cada usuario sea solo visualizado por el usuario que pretende visualizarlo. FOREIGN KEY: clave foranea
+
+>>>const pool = mysql.createPool(database);
+---> genera la conexion a la base de datos de una manera mas amigable como si fuera produccion
+
+>>>const { promisify } = require("util"); //permite convertir codigo de callbacks a codigo de promesas (por ejemplo el modulo mysql no soporta promesas, solo callbacks)
+
+>>>pool.query = promisify(pool.query); //cada vez que quiera hacer una consulta a la base de datos podre usar promesas o async await
